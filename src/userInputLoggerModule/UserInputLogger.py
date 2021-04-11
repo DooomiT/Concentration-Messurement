@@ -6,13 +6,16 @@ import time
 from threading import Thread
 from queue import Queue
 
+from src.helper.logger import setup_logger
+
 # CONST
 LOG_DELAY_S = 10
+LOGGER_NAME = "UserInputLogger"
 LOG_DIR = "{}{}".format(os.getcwd(), "\\logs")
-LOG_PATH = "{}\\{}".format(LOG_DIR, "UserInputLogger.log")
+LOG_NAME = "UserInputLogger.log"
+LOG_PATH = "{}\\{}".format(LOG_DIR, LOG_NAME)
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
-logging.basicConfig(filename = (LOG_PATH), level=logging.DEBUG, format='%(asctime)s: %(message)s')
 
 class UserInputLogger:
     '''
@@ -24,18 +27,20 @@ class UserInputLogger:
             ....
     '''
     def __init__(self, shared_queue):
-        logging.info("initialised UserInputLogger")
+        setup_logger(LOGGER_NAME, LOG_PATH, logging.DEBUG)
+        self.logger = logging.getLogger(LOGGER_NAME)
+        self.logger.info("initialised UserInputLogger")
         self.running = False
         self.shared_queue = shared_queue
         
     def setOptions(self, options):
-        logging.info("set options: {}".format(options))
+        self.logger.info("set options: {}".format(options))
         # TODO: implement
 
     def on_press(self, key):
         return str(key)
     
-    def run(self):
+    def run(self, shared_queue):
         while(self.running):
             end_time = time.perf_counter() + LOG_DELAY_S
             keys = []
@@ -44,16 +49,16 @@ class UserInputLogger:
                     event = events.get(LOG_DELAY_S)
                     if isinstance(event, keyboard.Events.Press):
                         keys.append("{}".format(event.key))
-            self.shared_queue.put(keys)
-            logging.info("send keys to ConcentrationEvaluator: {}".format(keys))
+            shared_queue.put(keys)
+            self.logger.info("send keys to ConcentrationEvaluator: {}".format(keys))
 
     def start(self):
-        logging.info("started UserInputLogger")
+        self.logger.info("started UserInputLogger")
         self.running = True
-        self.thread = Thread(target = self.run)
+        self.thread = Thread(target = self.run, args=(self.shared_queue, ))
         self.thread.start()   
 
     def stop(self):
-        logging.info("stoped UserInputLogger")
+        self.logger.info("stoped UserInputLogger")
         self.running = False
         self.thread.join()

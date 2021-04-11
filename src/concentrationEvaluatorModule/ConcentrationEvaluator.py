@@ -4,11 +4,14 @@ import time
 from threading import Thread
 from queue import Queue
 
+from src.helper.logger import setup_logger
+
+LOGGER_NAME = "ConcentrationEvaluator"
 LOG_DIR = "{}{}".format(os.getcwd(), "\\logs")
-LOG_PATH = "{}\\{}".format(LOG_DIR, "ConcentrationEvaluator.log")
+LOG_NAME = "ConcentrationEvaluator.log"
+LOG_PATH = "{}\\{}".format(LOG_DIR, LOG_NAME)
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
-logging.basicConfig(filename = (LOG_PATH), level=logging.DEBUG, format='%(asctime)s: %(message)s')
 
 class ConcentrationEvaluator:
     '''
@@ -18,28 +21,30 @@ class ConcentrationEvaluator:
         tbd: make nice docstring
     '''
     def __init__(self, shared_queue):
-        logging.info("initialised ConcentrationEvaluator")
+        setup_logger(LOGGER_NAME, LOG_PATH, logging.DEBUG)
+        self.logger = logging.getLogger(LOGGER_NAME)
+        self.logger.info("initialised ConcentrationEvaluator")
         self.running = False
         self.shared_queue = shared_queue
     
     def setOptions(self, options):
-        logging.info("set options: {}".format(options))
+        self.logger.info("set options: {}".format(options))
         # TODO: implement
     
-    def run(self):
+    def run(self, shared_queue):
          while(self.running):
-            userInput = self.shared_queue.get()
-            logging.debug("received data: {}".format(userInput))
+            userInput = shared_queue.get()
+            self.logger.debug("received data: {}".format(userInput))
             # TODO: implement evaluation
 
     
     def start(self):
-        logging.info("started ConcentrationEvaluator")
+        self.logger.info("started ConcentrationEvaluator")
         self.running = True
-        self.thread = Thread(target = self.run, args = (self.shared_queue))
+        self.thread = Thread(target = self.run, args = (self.shared_queue, ))
         self.thread.start()    
     
     def stop(self):
-        logging.info("stopped ConcentrationEvaluator")
+        self.logger.info("stopped ConcentrationEvaluator")
         self.running = False
         self.thread.join()
