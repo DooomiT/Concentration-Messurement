@@ -4,6 +4,7 @@ import logging
 import os
 import time
 from threading import Thread
+from queue import Queue
 
 # CONST
 LOG_DELAY_S = 10
@@ -22,14 +23,15 @@ class UserInputLogger:
             log to file or object?
             ....
     '''
-    def __init__(self):
+    def __init__(self, shared_queue):
         logging.info("initialised UserInputLogger")
         self.running = False
-    
+        self.shared_queue = shared_queue
+        
     def setOptions(self, options):
         logging.info("set options: {}".format(options))
         # TODO: implement
-    
+
     def on_press(self, key):
         return str(key)
     
@@ -42,9 +44,9 @@ class UserInputLogger:
                     event = events.get(LOG_DELAY_S)
                     if isinstance(event, keyboard.Events.Press):
                         keys.append("{}".format(event.key))
-            logging.info("{} keys were pressed".format(len(keys)))
-            # TODO: Pass keys somehow to the evaluation
-                     
+            self.shared_queue.put(keys)
+            logging.info("send keys to ConcentrationEvaluator: {}".format(keys))
+
     def start(self):
         logging.info("started UserInputLogger")
         self.running = True
@@ -54,11 +56,3 @@ class UserInputLogger:
         logging.info("stoped UserInputLogger")
         self.running = False
         self.thread.join()
-
-    
-# TEST - TBR               
-uil = UserInputLogger()
-uil.start()
-time.sleep(10)
-uil.stop()
-            
