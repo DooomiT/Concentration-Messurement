@@ -51,7 +51,8 @@ class UserInputLogger:
         logging.info("started UserInputLogger")
         self.running = True
         self.thread = Thread(target = self.run)
-        self.thread.start()    
+        self.thread.start()   
+
     def stop(self):
         logging.info("stoped UserInputLogger")
         self.running = False
