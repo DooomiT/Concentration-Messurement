@@ -19,12 +19,24 @@ if not os.path.exists(LOG_DIR):
 
 class UserInputLogger:
     '''
-        A Logger which logs the User Input based on several options
-        tbd:
-            make nice docstring
-            implementation
-            log to file or object?
-            ....
+    Wraps threading.Thread
+    Logs the users keyboard input and pushes it to a queue
+    
+    Attributes
+    ----------
+    shared_queue : Queue
+        queue where the keys will get pushed on
+
+    Methods
+    ----------
+    setOptions(options="")
+        not implemented
+        
+    start()
+        starts a thread which loggs the user inputs
+    
+    stop()
+        stops / joins the thread which loggs the user inputs  
     '''
     def __init__(self, shared_queue):
         setup_logger(LOGGER_NAME, LOG_PATH, logging.DEBUG)
@@ -33,7 +45,7 @@ class UserInputLogger:
         self.running = False
         self.shared_queue = shared_queue
         
-    def setOptions(self, options):
+    def setOptions(self, options=""):
         self.logger.info("set options: {}".format(options))
         # TODO: implement
 

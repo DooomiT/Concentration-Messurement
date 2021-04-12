@@ -15,10 +15,25 @@ if not os.path.exists(LOG_DIR):
 
 class ConcentrationEvaluator:
     '''
-        Input: logged User Data (time, data)
-        Some Math
-        Output: concentrationValue
-        tbd: make nice docstring
+    Wraps threading.Thread
+    gets a users Key data from a queue and 
+    evaluates them as concentration level
+    
+    Attributes
+    ----------
+    shared_queue : Queue
+        queue where the keys will get pushed on
+
+    Methods
+    ----------
+    setOptions(options="")
+        not implemented
+        
+    start()
+        starts a thread which loggs the user inputs
+    
+    stop()
+        stops / joins the thread which loggs the user inputs  
     '''
     def __init__(self, shared_queue):
         setup_logger(LOGGER_NAME, LOG_PATH, logging.DEBUG)
@@ -32,7 +47,7 @@ class ConcentrationEvaluator:
         # TODO: implement
     
     def run(self, shared_queue):
-         while(self.running):
+        while(self.running):
             userInput = shared_queue.get()
             self.logger.debug("received data: {}".format(userInput))
             # TODO: implement evaluation
