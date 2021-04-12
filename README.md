@@ -11,3 +11,10 @@ cd Concentration-Messurment
 .\venv\Scripts\activate || ./venv/bin/activate
 pip install -r requirements.txt
 ```
+
+## Adding dependencies
+```bash
+.\venv\Scripts\activate || ./venv/bin/activate
+pip install <dependency>
+pip freeze > requirements.txt
+```
