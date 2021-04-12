@@ -9,7 +9,6 @@ from queue import Queue
 from src.helper.logger import setup_logger
 
 # CONST
-LOG_DELAY_S = 10
 LOGGER_NAME = "UserInputLogger"
 LOG_DIR = "{}{}".format(os.getcwd(), "\\logs")
 LOG_NAME = "UserInputLogger.log"
@@ -27,6 +26,9 @@ class UserInputLogger:
     shared_queue : Queue
         queue where the keys will get pushed on
 
+    push_queue_delay : int = 10
+        time delay between pushing data to the queue
+
     Methods
     ----------
     setOptions(options="")
@@ -38,12 +40,13 @@ class UserInputLogger:
     stop()
         stops / joins the thread which loggs the user inputs  
     '''
-    def __init__(self, shared_queue):
+    def __init__(self, shared_queue, push_queue_delay=10):
         setup_logger(LOGGER_NAME, LOG_PATH, logging.DEBUG)
         self.logger = logging.getLogger(LOGGER_NAME)
         self.logger.info("initialised UserInputLogger")
         self.running = False
         self.shared_queue = shared_queue
+        self.push_queue_delay = push_queue_delay
         
     def setOptions(self, options=""):
         self.logger.info("set options: {}".format(options))
@@ -54,11 +57,11 @@ class UserInputLogger:
     
     def run(self, shared_queue):
         while(self.running):
-            end_time = time.perf_counter() + LOG_DELAY_S
+            end_time = time.perf_counter() + self.push_queue_delay
             keys = []
             while time.perf_counter() < end_time:   
                 with keyboard.Events() as events:
-                    event = events.get(LOG_DELAY_S)
+                    event = events.get(self.push_queue_delay)
                     if isinstance(event, keyboard.Events.Press):
                         keys.append("{}".format(event.key))
             shared_queue.put(keys)
