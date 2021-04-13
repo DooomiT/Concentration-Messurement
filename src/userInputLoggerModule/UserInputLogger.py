@@ -38,6 +38,8 @@ class UserInputLogger:
     stop()
         stops / joins the thread which loggs the user inputs  
     '''
+    # TODO: update docstring
+
     def __init__(self, shared_queue, push_queue_delay=10):
         self.logging_enabled = True
         self.initLoggerVariables()
@@ -46,19 +48,19 @@ class UserInputLogger:
         self.shared_queue = shared_queue
         self.push_queue_delay = push_queue_delay
         self.log(logging.info,"initialised UserInputLogger")
-        
+
     def initLoggerVariables(self):
         self.logger_name = LOGGER_NAME
         self.log_dir = LOG_DIR
         self.logfile_name = LOGFILE_NAME
-    
+
     def setupLogger(self):
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
         self.log_path = "{}\\{}".format(self.log_dir, self.logfile_name)
         setup_logger(self.logger_name, self.log_path, logging.DEBUG)
         self.logger = logging.getLogger(LOGGER_NAME)
-        
+
     def setOptions(self, logging_enabled=True, log_dir=None, logfile_name=None, push_queue_delay=None):
         self.logging_enabled = logging_enabled
         if log_dir: self.log_dir = log_dir
@@ -66,9 +68,9 @@ class UserInputLogger:
         if push_queue_delay: self.push_queue_delay = push_queue_delay
         self.setupLogger()
         self.log(logging.info, "set options: {},{},{},{}".format(logging_enabled, log_dir, logfile_name, push_queue_delay))
-    
+
     def log(self, log_type, log_string):
-        if not self.logging_enabled: return
+        if self.logging_enabled == False: return
         if log_type is logging.info: self.logger.info(log_string)
         elif log_type is logging.debug: self.logger.debug(log_string)
 
@@ -82,7 +84,7 @@ class UserInputLogger:
                     if isinstance(event, keyboard.Events.Press):
                         keys.append("{}".format(event.key))
             shared_queue.put(keys)
-            self.logger.info("send keys to ConcentrationEvaluator: {}".format(keys))
+            self.log(logging.info, "send keys to ConcentrationEvaluator: {}".format(keys))
 
     def start(self):
         self.log(logging.info,"started UserInputLogger")
