@@ -23,8 +23,8 @@ class ConcentrationEvaluator:
 
     Methods
     ----------
-    setOptions(options="")
-        not implemented
+    setOptions(logging_enabled=True, log_dir=None, logfile_name=None, push_queue_delay=None)
+        changes the logging options
         
     start()
         starts a thread which loggs the user inputs
@@ -32,7 +32,7 @@ class ConcentrationEvaluator:
     stop()
         stops / joins the thread which loggs the user inputs  
     '''
-    # TODO: update docstring
+    
     def __init__(self, shared_queue):
         self.logging_enabled = True
         self.initLoggerVariables()

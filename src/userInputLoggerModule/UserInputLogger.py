@@ -28,9 +28,8 @@ class UserInputLogger:
 
     Methods
     ----------
-    setOptions(options)
-        options : Dict 
-        not implemented
+    setOptions(logging_enabled=True, log_dir=None, logfile_name=None, push_queue_delay=None)
+        changes the logging options
         
     start()
         starts a thread which loggs the user inputs
@@ -38,7 +37,6 @@ class UserInputLogger:
     stop()
         stops / joins the thread which loggs the user inputs  
     '''
-    # TODO: update docstring
 
     def __init__(self, shared_queue, push_queue_delay=10):
         self.logging_enabled = True
