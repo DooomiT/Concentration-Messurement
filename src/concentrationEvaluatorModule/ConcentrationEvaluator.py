@@ -20,6 +20,9 @@ class ConcentrationEvaluator:
     ----------
     shared_queue : Queue
         queue where the keys will get pushed on
+        
+    first_average_time : double
+        time which will be taken to create the first average
 
     Methods
     ----------
@@ -33,12 +36,15 @@ class ConcentrationEvaluator:
         stops / joins the thread which loggs the user inputs  
     '''
     
-    def __init__(self, shared_queue):
+    def __init__(self, shared_queue, first_average_time=10):
         self.logging_enabled = True
         self.initLoggerVariables()
         self.setupLogger()
         self.running = False
         self.shared_queue = shared_queue
+        self.first_average_time = first_average_time
+        self.first_average = None
+        self.deleting_keys = ["delete", "backspace"]
         self.log(logging.info,"initialised ConcentrationEvaluator")
 
     def initLoggerVariables(self):
@@ -66,11 +72,47 @@ class ConcentrationEvaluator:
         if log_type is logging.info: self.logger.info(log_string)
         elif log_type is logging.debug: self.logger.debug(log_string)
 
+    def getAmountAddingDeletingKeys(self, keys):
+        amount_of_keys = len(keys)
+        amount_of_deleting_keys = 0
+        for key in self.deleting_keys:
+            amount_of_deleting_keys += keys.count(key)
+        amount_of_adding_keys = amount_of_keys - amount_of_deleting_keys
+        return amount_of_adding_keys, amount_of_deleting_keys
+    
+    def evaluateAverageKeys(self, keys):
+        amount_of_adding_keys, amount_of_deleting_keys = self.getAmountAddingDeletingKeys(keys)
+        return amount_of_adding_keys / self.first_average_time
+
+    def evaluateVarianceKeys(self, keys):
+        #TODO: implement
+        return 0
+
+    def evaluateFirstConcentration(self, shared_queue):
+        self.log(logging.debug, "evaluating first average for {} seconds".format(self.first_average_time))
+        end_time = time.perf_counter() + self.first_average_time
+        collected_keys = []
+        while time.perf_counter() < end_time:
+            user_input = shared_queue.get()
+            collected_keys.extend(user_input)
+            self.log(logging.debug, "received data: {}".format(user_input))
+        self.first_average = self.evaluateAverageKeys(collected_keys)
+        self.first_variance = self.evaluateVarianceKeys(collected_keys)
+        self.log(logging.debug, "evaluated first - average = {}, variance = {}".format(self.first_average, self.first_variance))
+
+    def evaluateNewConcentration(self, shared_queue):
+        user_input = shared_queue.get()
+        self.log(logging.debug, "received data: {}".format(user_input))
+        current_average = self.evaluateAverageKeys(user_input)
+        current_variance = self.evaluateVarianceKeys(user_input)
+        self.log(logging.debug, "evaluated std - average = {}, variance = {}".format(self.current_concentration, self.current_variance))
+        self.current_concentration = (self.first_average - current_average) + (self.first_variance - current_variance)
+        self.log(logging.debug, "user concentration = {}".format(self.current_concentration))
+
     def run(self, shared_queue):
         while(self.running):
-            userInput = shared_queue.get()
-            self.log(logging.debug, "received data: {}".format(userInput))
-            # TODO: implement evaluation
+            if(self.first_average == None): self.evaluateFirstConcentration(shared_queue)
+            self.evaluateNewConcentration(shared_queue)
 
     def start(self):
         self.log(logging.info, "started ConcentrationEvaluator")
