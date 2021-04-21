@@ -36,12 +36,13 @@ class ConcentrationEvaluator:
         stops / joins the thread which loggs the user inputs  
     '''
     
-    def __init__(self, shared_queue, first_average_time=10):
+    def __init__(self, shared_queue, database, first_average_time=10):
         self.logging_enabled = True
         self.initLoggerVariables()
         self.setupLogger()
         self.running = False
         self.shared_queue = shared_queue
+        self.database = database
         self.first_average_time = first_average_time
         self.first_average = None
         self.deleting_keys = ["delete", "backspace"]
@@ -105,14 +106,17 @@ class ConcentrationEvaluator:
         self.log(logging.debug, "received data: {}".format(user_input))
         current_average = self.evaluateAverageKeys(user_input)
         current_variance = self.evaluateVarianceKeys(user_input)
-        self.log(logging.debug, "evaluated std - average = {}, variance = {}".format(self.current_concentration, self.current_variance))
-        self.current_concentration = (self.first_average - current_average) + (self.first_variance - current_variance)
+        self.log(logging.debug, "evaluated std - average = {}, variance = {}".format(current_average, current_variance))
+        self.current_concentration = {}
+        self.current_concentration["timestamp"] = time.time()
+        self.current_concentration["concentration"] = (self.first_average - current_average) + (self.first_variance - current_variance)
         self.log(logging.debug, "user concentration = {}".format(self.current_concentration))
 
     def run(self, shared_queue):
         while(self.running):
             if(self.first_average == None): self.evaluateFirstConcentration(shared_queue)
             self.evaluateNewConcentration(shared_queue)
+            self.database.insertEvaluation(self.current_concentration)
 
     def start(self):
         self.log(logging.info, "started ConcentrationEvaluator")
