@@ -5,16 +5,17 @@ from threading import Thread
 from queue import Queue
 from src.userInputLoggerModule.UserInputLogger import UserInputLogger
 from src.concentrationEvaluatorModule.ConcentrationEvaluator import ConcentrationEvaluator
-from src.concentrationEvaluatorModule.db import KeyloggerDatabase
 
-MONGO_URL = "mongodb://localhost:27017/"
-DATABASE_NAME = "KeyloggerDB"
-COLLECTION_NAME = "keylogs"
+FILE_NAME = "keylogger.out"
+FILE_DIR = "{}//{}".format(os.getcwd(), "data")
+FILE_PATH = "{}//{}".format(FILE_DIR, FILE_NAME)
+
+if not os.path.exists(FILE_DIR):
+    os.makedirs(FILE_DIR)
 
 shared_queue = Queue()
-database = KeyloggerDatabase(MONGO_URL, DATABASE_NAME, COLLECTION_NAME)
 user_input_logger = UserInputLogger(shared_queue)
-concentration_evaluator = ConcentrationEvaluator(shared_queue, database)
+concentration_evaluator = ConcentrationEvaluator(shared_queue, FILE_PATH)
 user_input_logger.start()
 concentration_evaluator.start()
 time.sleep(21)
